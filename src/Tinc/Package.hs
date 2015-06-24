@@ -1,28 +1,33 @@
-module Tinc.Package where
-
-import           Data.List
+module Tinc.Package (
+  Package(..)
+, Version(..)
+, showPackage
+, parsePackage
+, parseInstallPlan
+) where
 
 data Package
   = Package {
     packageName :: String,
-    packageVersion :: String
+    packageVersion :: Version
   }
   deriving (Eq, Ord, Show)
 
+data Version = Version {
+  versionNumber :: String
+, versionGitRevision :: Maybe String
+} deriving (Eq, Ord, Show)
+
 showPackage :: Package -> String
-showPackage (Package name version) = name ++ "-" ++ version
+showPackage (Package name version) = name ++ "-" ++ showVersion version
+
+showVersion :: Version -> String
+showVersion (Version v _) = v
 
 parsePackage :: String -> Package
 parsePackage s = case break (== '-') (reverse s) of
-  (v, '-' : p) -> Package (reverse p) (reverse v)
-  _ -> Package s ""
+  (v, '-' : p) -> Package (reverse p) (Version (reverse v) Nothing)
+  _ -> Package s (Version "" Nothing)
 
 parseInstallPlan :: String -> [Package]
 parseInstallPlan = map parsePackage . concatMap (take 1 . words) . drop 2 . lines
-
-lookupPackage :: Package -> [FilePath] -> Either String (Maybe FilePath)
-lookupPackage targetPackage packageFiles =
-  case filter ((showPackage targetPackage ++ "-") `isPrefixOf`) packageFiles of
-    [packageFile] -> return $ Just packageFile
-    [] -> return Nothing
-    multiple -> Left ("Package found multiple times: " ++ intercalate ", " multiple)
