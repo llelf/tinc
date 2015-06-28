@@ -14,10 +14,10 @@ import           Data.List.Compat
 import           System.Directory
 import           System.FilePath
 import           System.IO.Temp
-import           System.Process
 
 import           Tinc.Package
 import           Tinc.PackageGraph
+import           Tinc.Process
 import           Tinc.Cache
 import           Tinc.GhcInfo
 import           Tinc.Types
@@ -30,14 +30,14 @@ currentDirectory = "."
 initSandbox :: [Path PackageConfig] -> IO ()
 initSandbox packageConfigs = do
   deleteSandbox
-  callCommand "cabal sandbox init"
+  callProcess "cabal" ["sandbox", "init"]
   packageDb <- findPackageDb currentDirectory
   registerPackageConfigs packageDb packageConfigs
 
 deleteSandbox :: IO ()
 deleteSandbox = do
   exists <- doesDirectoryExist cabalSandboxDirectory
-  when exists (callCommand "cabal sandbox delete")
+  when exists (callProcess "cabal" ["sandbox", "delete"])
 
 installDependencies :: GhcInfo -> Bool -> Path CacheDir -> IO ()
 installDependencies ghcInfo dryRun cacheDir = do
@@ -62,7 +62,7 @@ createInstallPlan ghcInfo cacheDir = do
       missing = installPlan \\ map fst reusable
   return (InstallPlan installPlan reusable missing)
 
-cabalInstallPlan :: IO [Package]
+cabalInstallPlan :: Process m => m [Package]
 cabalInstallPlan = parseInstallPlan <$> readProcess "cabal" command ""
   where
     command :: [String]
