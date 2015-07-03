@@ -20,6 +20,7 @@ import           System.IO.Temp
 import           Test.Mockery.Directory
 
 import           Tinc.Git
+import           Tinc.Hpack
 import           Tinc.Process
 
 data Env = Env {

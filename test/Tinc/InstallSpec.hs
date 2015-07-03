@@ -39,7 +39,6 @@ spec = do
   describe "cabalInstallPlan" $ do
     it "returns install plan" $ do
       inTempDirectory $ do
-      {-
         writeFile "foo.cabal" $ unlines [
             "name:             foo"
           , "version:          0.0.0"
@@ -50,15 +49,16 @@ spec = do
           , "      base == 4.*"
           , "    , setenv == 0.1.1.3"
           ]
-          -}
 
         sandbox <- getCurrentDirectory
 
-        let mockedReadProcess = mock ("cabal", ["install", "--only-dependencies", "--enable-tests", "--dry-run", sandbox], "", return foo)
+        let mockedReadProcess = mock ("cabal", args, "", return cabalInstallOutput)
+              where
+                args = ["install", "--only-dependencies", "--enable-tests", "--dry-run", sandbox]
             mockedCallProcess = mock cabalSandboxInit
 
-            foo :: String
-            foo = unlines [
+            cabalInstallOutput :: String
+            cabalInstallOutput = unlines [
                 "Resolving dependencies..."
               , "In order, the following would be installed (use -v for more details):"
               , "setenv-0.1.1.3"

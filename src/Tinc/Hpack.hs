@@ -1,5 +1,5 @@
 module Tinc.Hpack (
-  GitDependency(..) -- FIXME
+  GitDependency(..)
 , extractGitDependencies
 ) where
 
@@ -7,9 +7,13 @@ import           Hpack.Config
 import           System.Directory
 
 import           Tinc.Fail
-import           Tinc.Git
 
--- TODO: merge with Tinc.Git ?
+data GitDependency = GitDependency {
+  gitDependencyName :: String
+, gitDependencyUrl :: String
+, gitDependencyRef :: String
+} deriving (Eq, Show)
+
 extractGitDependencies :: IO [GitDependency]
 extractGitDependencies = do
   exists <- doesFileExist packageConfig
